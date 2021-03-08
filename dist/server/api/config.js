@@ -20,7 +20,7 @@ public_ip_1.default
     exports.publicIP = ip;
 })
     .catch();
-const defaultConfig = { steamApiKey: '', token: '', port: 1349, hlaePath: '', afxCEFHudInteropPath: '' };
+const defaultConfig = { steamApiKey: '', token: '', port: 1349, hlaePath: '', afxCEFHudInteropPath: '', remoteDBUrl: '' };
 exports.loadConfig = async () => {
     if (!exports.publicIP) {
         try {
@@ -69,6 +69,7 @@ exports.updateConfig = async (req, res) => {
         steamApiKey: req.body.steamApiKey,
         port: Number(req.body.port),
         token: req.body.token,
+        remoteDBUrl: req.body.remoteDBUrl,
         hlaePath: req.body.hlaePath,
         afxCEFHudInteropPath: req.body.afxCEFHudInteropPath
     };

@@ -8,7 +8,7 @@
       width: 800px;
       height: 350px;
       overflow: hidden;
-      
+
     }
     #playercams {
       overflow: hidden;
@@ -24,7 +24,7 @@
               type: 'flv',
               autoPlay: true,
               live: true,
-              videoChunk: 752 * 300,
+              //videoChunk: 750 * 300,
               audioChunk: 0,
               url: `ws://${window.location.host.substr(0, window.location.host.indexOf(':'))}:8000/live/HUD_MANAGER.flv`
           });
@@ -37,7 +37,7 @@
 </script>
 
 <body>
-  <video id="playercams" width=750 height=300 muted="muted"></video>
+  <video id="playercams" muted="muted"></video>
 </body>
 
 </html>

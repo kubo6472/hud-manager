@@ -51,7 +51,8 @@ export default class Config extends React.Component<IProps, IState> {
 				port: 1349,
 				token: '',
 				hlaePath: '',
-				afxCEFHudInteropPath: ''
+				afxCEFHudInteropPath: '',
+				remoteDBUrl:'',
 			},
 			cfg: {
 				success: false,
@@ -241,7 +242,7 @@ export default class Config extends React.Component<IProps, IState> {
 		);
 	};
 	changeHandler = (event: any) => {
-		const name: 'steamApiKey' | 'port' | 'token' = event.target.name;
+		const name: 'steamApiKey' | 'port' | 'token' | 'remoteDBUrl' = event.target.name;
 		const { config }: any = this.state;
 		config[name] = event.target.value;
 		this.setState({ config });
@@ -307,6 +308,18 @@ export default class Config extends React.Component<IProps, IState> {
 									onChange={this.changeHandler}
 									value={this.state.config.token}
 									placeholder="GSI Token"
+								/>
+							</FormGroup>
+						</Col>
+						<Col md="4">
+							<FormGroup>
+								<Input
+									type="text"
+									name="remoteDBUrl"
+									id="remoteDBUrl"
+									onChange={this.changeHandler}
+									value={this.state.config.remoteDBUrl}
+									placeholder="remoteDBUrl"
 								/>
 							</FormGroup>
 						</Col>
