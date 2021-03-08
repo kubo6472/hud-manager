@@ -108,7 +108,7 @@ export interface Config {
 	token: string;
 	hlaePath: string;
 	afxCEFHudInteropPath: string;
-	remoteDBUrl:string;
+	remoteDBUrl: string;
 }
 
 export interface ExtendedConfig extends Config {

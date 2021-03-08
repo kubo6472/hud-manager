@@ -52,7 +52,7 @@ export default class Config extends React.Component<IProps, IState> {
 				token: '',
 				hlaePath: '',
 				afxCEFHudInteropPath: '',
-				remoteDBUrl:'',
+				remoteDBUrl: ''
 			},
 			cfg: {
 				success: false,

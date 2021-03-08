@@ -20,7 +20,14 @@ publicIp
 	})
 	.catch();
 
-const defaultConfig: Config = { steamApiKey: '', token: '', port: 1349, hlaePath: '', afxCEFHudInteropPath: '', remoteDBUrl: '' };
+const defaultConfig: Config = {
+	steamApiKey: '',
+	token: '',
+	port: 1349,
+	hlaePath: '',
+	afxCEFHudInteropPath: '',
+	remoteDBUrl: ''
+};
 
 export const loadConfig = async (): Promise<Config> => {
 	if (!publicIP) {
@@ -74,7 +81,7 @@ export const updateConfig: express.RequestHandler = async (req, res) => {
 		steamApiKey: req.body.steamApiKey,
 		port: Number(req.body.port),
 		token: req.body.token,
-		remoteDBUrl:req.body.remoteDBUrl,
+		remoteDBUrl: req.body.remoteDBUrl,
 		hlaePath: req.body.hlaePath,
 		afxCEFHudInteropPath: req.body.afxCEFHudInteropPath
 	};
