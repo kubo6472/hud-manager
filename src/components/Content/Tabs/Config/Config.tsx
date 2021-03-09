@@ -510,7 +510,7 @@ export default class Config extends React.Component<IProps, IState> {
 						}
 						<Col md="12" className="config-entry">
 							<div className="config-description">
-								GameState Integration2: {gsi.message || 'Loaded succesfully'}
+								GameState Integration: {gsi.message || 'Loaded succesfully'}
 							</div>
 
 							<Button
