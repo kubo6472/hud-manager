@@ -23,6 +23,13 @@ const TeamsTab = ({ cxt }: IProps) => {
 		logo: '',
 		extra: {}
 	};
+	//Sort teams alphabetically
+	cxt.teams.sort(function (a, b) {
+		const nameA = a.name.toUpperCase();
+		const nameB = b.name.toUpperCase();
+		return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
+	});
+
 	const [form, setForm] = useState(emptyTeam);
 	const [search, setSearch] = useState('');
 
@@ -51,6 +58,11 @@ const TeamsTab = ({ cxt }: IProps) => {
 
 	const loadTeams = async (id?: string) => {
 		await cxt.reload();
+		cxt.teams.sort(function (a, b) {
+			const nameA = a.name.toUpperCase();
+			const nameB = b.name.toUpperCase();
+			return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
+		});
 		if (id) {
 			loadTeam(id);
 		}

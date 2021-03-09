@@ -5,6 +5,7 @@ import api from './../../../../api/api';
 import config from './../../../../api/config';
 import DragInput from './../../../DragFileInput';
 import ImportModal from './ImportModal';
+import CustomModal from './CustomModal';
 import { IContextData } from '../../../Context';
 import ElectronOnly from '../../../ElectronOnly';
 
@@ -30,6 +31,11 @@ interface IState {
 	gsi: ConfigStatus;
 	restartRequired: boolean;
 	importModalOpen: boolean;
+	customModal: {
+		open: boolean;
+		title: string;
+		message: string;
+	};
 	conflict: {
 		teams: number;
 		players: number;
@@ -40,6 +46,7 @@ interface IState {
 	};
 	ip: string;
 	data: any;
+	remoteDBButton: boolean;
 }
 
 export default class Config extends React.Component<IProps, IState> {
@@ -67,6 +74,11 @@ export default class Config extends React.Component<IProps, IState> {
 				accessible: true
 			},
 			importModalOpen: false,
+			customModal: {
+				open: false,
+				title: '',
+				message: ''
+			},
 			restartRequired: false,
 			conflict: {
 				teams: 0,
@@ -77,9 +89,11 @@ export default class Config extends React.Component<IProps, IState> {
 				installing: false
 			},
 			data: {},
-			ip: ''
+			ip: '',
+			remoteDBButton: false
 		};
 	}
+
 	loadEXE = (type: 'hlaePath' | 'afxCEFHudInteropPath') => (files: FileList) => {
 		if (!files) return;
 		const file = files[0] as ExtendedFile;
@@ -101,15 +115,18 @@ export default class Config extends React.Component<IProps, IState> {
 		try {
 			await api.files.sync(data);
 		} catch {}
+		const showCustomModal = this.showCustomModal;
+		showCustomModal('Success!', 'Updated the database');
 		this.setState({ data: {}, conflict: { teams: 0, players: 0 }, importModalOpen: false }, callback);
 	};
+
 	importCheck = (callback: any) => (files: FileList) => {
 		if (!files) return;
 		const file = files[0] as ExtendedFile;
 		if (!file) {
 			return;
 		}
-		if (!file.path || file.type !== 'application/json') return;
+		if (file.type !== 'application/json') return;
 		const reader: any = new FileReader();
 		reader.readAsDataURL(file);
 		reader.onload = async () => {
@@ -134,6 +151,88 @@ export default class Config extends React.Component<IProps, IState> {
 			} catch {}
 		};
 	};
+
+	importRemoteCheck = (callback: any) => {
+		if (!this.isURL(this.state.config.remoteDBUrl)) return;
+		this.setState({ remoteDBButton: true });
+		const showCustomModal = this.showCustomModal;
+		const remoteDBButtonChanger = this.remoteDBButtonChanger;
+		fetch(this.state.config.remoteDBUrl, {
+			method: 'GET',
+			headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
+		})
+			.then(response => {
+				const contentType = response.headers.get('content-type');
+				if (contentType && contentType.indexOf('application/json') !== -1) {
+					return response.json().then(async data => {
+						if (!data.teams || !data.players) {
+							showCustomModal(
+								"Error - Can't update DB",
+								"Hmm.. I received JSON but doesn't look like a LHM database file." +
+									JSON.stringify(data).substring(0, 50)
+							);
+							this.setState({ remoteDBButton: false });
+							return;
+						}
+						try {
+							const response = await api.files.syncCheck(data);
+							if (!response) {
+								return;
+								this.setState({ remoteDBButton: false });
+							}
+							if (!response.players && !response.teams) {
+								return this.import(data, callback)();
+								this.setState({ remoteDBButton: false });
+							}
+							this.setState({
+								conflict: {
+									players: response.players,
+									teams: response.teams
+								},
+								importModalOpen: true,
+								data: data
+							});
+							this.setState({ remoteDBButton: false });
+						} catch {}
+					});
+				} else {
+					return response.text().then(data => {
+						showCustomModal(
+							"Error - Can't update DB",
+							"Recived data, but it's not JSON: " + JSON.stringify(data).substring(0, 40)
+						);
+						this.setState({ remoteDBButton: false });
+					});
+				}
+			})
+			.catch(function (error) {
+				if (error.toString() == 'TypeError: Failed to fetch') {
+					showCustomModal(
+						"Error - Can't update DB",
+						'' +
+							error.message +
+							" - Either we couldn't connect to your server, or it could be a CORS problem."
+					);
+					remoteDBButtonChanger(false);
+				} else {
+					showCustomModal("Error - Can't update DB", error.toString());
+					remoteDBButtonChanger(false);
+				}
+			});
+	};
+
+	showCustomModal = (title: string, msg: string) => {
+		const stateChanger = this.state.customModal;
+		stateChanger.open = true;
+		stateChanger.title = title;
+		stateChanger.message = msg;
+		this.setState({ customModal: stateChanger });
+	};
+
+	remoteDBButtonChanger = (state: boolean) => {
+		this.setState({ remoteDBButton: state });
+	};
+
 	download = (target: 'gsi' | 'cfgs' | 'db') => {
 		api.config.download(target);
 	};
@@ -215,6 +314,8 @@ export default class Config extends React.Component<IProps, IState> {
 		this.checkCFG();
 		this.checkGSI();
 		this.checkUpdate();
+
+		this.importRemoteCheck(this.props.cxt.reload);
 	}
 	checkUpdate = () => {
 		if (!isElectron) return;
@@ -251,6 +352,11 @@ export default class Config extends React.Component<IProps, IState> {
 	toggleModal = () => {
 		this.setState({ importModalOpen: !this.state.importModalOpen });
 	};
+	toggleErrorModal = () => {
+		const stateChanger = this.state.customModal;
+		stateChanger.open = !this.state.customModal.open;
+		this.setState({ customModal: stateChanger });
+	};
 	save = async () => {
 		const { config } = this.state;
 		const oldConfig = await api.config.get();
@@ -260,9 +366,34 @@ export default class Config extends React.Component<IProps, IState> {
 		await api.config.update(config);
 		this.checkGSI();
 	};
+
+	isURL = (str: any) => {
+		const pattern = new RegExp(
+			'^(https?:\\/\\/)?' + // protocol
+				'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
+				'((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+				'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+				'(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+				'(\\#[-a-z\\d_]*)?$',
+			'i'
+		); // fragment locator
+		return pattern.test(str);
+	};
+
 	render() {
 		const { cxt } = this.props;
-		const { gsi, cfg, importModalOpen, conflict, data, ip, config, update } = this.state;
+		const {
+			gsi,
+			cfg,
+			importModalOpen,
+			customModal,
+			conflict,
+			data,
+			ip,
+			config,
+			update,
+			remoteDBButton
+		} = this.state;
 		return (
 			<Form>
 				<div className="tab-title-container">Settings</div>
@@ -274,8 +405,15 @@ export default class Config extends React.Component<IProps, IState> {
 						players={conflict.players}
 						save={this.import(data, cxt.reload)}
 					/>
+					<CustomModal
+						isOpen={customModal.open}
+						toggle={this.toggleErrorModal}
+						msg={customModal.message}
+						title={customModal.title}
+					/>
+
 					<Row className="padded base-config">
-						<Col md="4">
+						<Col md="3">
 							<FormGroup>
 								<Input
 									type="text"
@@ -287,7 +425,7 @@ export default class Config extends React.Component<IProps, IState> {
 								/>
 							</FormGroup>
 						</Col>
-						<Col md="4">
+						<Col md="3">
 							<FormGroup>
 								<Input
 									type="number"
@@ -299,7 +437,7 @@ export default class Config extends React.Component<IProps, IState> {
 								/>
 							</FormGroup>
 						</Col>
-						<Col md="4">
+						<Col md="3">
 							<FormGroup>
 								<Input
 									type="text"
@@ -311,7 +449,7 @@ export default class Config extends React.Component<IProps, IState> {
 								/>
 							</FormGroup>
 						</Col>
-						<Col md="4">
+						<Col md="3">
 							<FormGroup>
 								<Input
 									type="text"
@@ -372,8 +510,9 @@ export default class Config extends React.Component<IProps, IState> {
 						}
 						<Col md="12" className="config-entry">
 							<div className="config-description">
-								GameState Integration: {gsi.message || 'Loaded succesfully'}
+								GameState Integration2: {gsi.message || 'Loaded succesfully'}
 							</div>
+
 							<Button
 								className="purple-btn round-btn"
 								disabled={gsi.loading || gsi.success || !gsi.accessible}
@@ -398,31 +537,46 @@ export default class Config extends React.Component<IProps, IState> {
 								See now
 							</Button>
 						</Col>
-						{isElectron ? (
-							<Col md="12" className="config-entry">
-								<div className="config-description">Downloads</div>
-								<div className="download-container">
-									<Button onClick={() => this.download('gsi')} className="purple-btn round-btn">
-										GSI config
-									</Button>
-									<Button onClick={() => this.download('cfgs')} className="purple-btn round-btn">
-										HUD configs
-									</Button>
-									<Button onClick={() => this.download('db')} className="purple-btn round-btn">
-										Export DB
-									</Button>
-								</div>
-							</Col>
-						) : null}
+
+						<Col md="12" className="config-entry">
+							<div className="config-description">Downloads</div>
+							<div className="download-container">
+								<Button onClick={() => this.download('gsi')} className="purple-btn round-btn">
+									GSI config
+								</Button>
+								<Button onClick={() => this.download('cfgs')} className="purple-btn round-btn">
+									HUD configs
+								</Button>
+								<Button onClick={() => this.download('db')} className="purple-btn round-btn">
+									Export DB
+								</Button>
+							</div>
+						</Col>
+
 						<Col md="12" className="config-entry">
 							<div className="config-description">Import</div>
-							<DragInput
-								id="import_file"
-								label="Import database"
-								accept=".json"
-								onChange={this.importCheck(cxt.reload)}
-								className="path_selector"
-							/>
+							<div
+								className="download-container"
+								style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+							>
+								<DragInput
+									id="import_file"
+									label="Import database"
+									accept=".json"
+									onChange={this.importCheck(cxt.reload)}
+									className="path_selector"
+								/>
+
+								{this.isURL(this.state.config.remoteDBUrl) ? (
+									<Button
+										className="lightblue-btn round-btn"
+										onClick={() => this.importRemoteCheck(cxt.reload)}
+										disabled={remoteDBButton}
+									>
+										Update from Remote URL
+									</Button>
+								) : null}
+							</div>
 						</Col>
 						<Col md="12" className="config-entry">
 							<div className="config-description">Reader Code</div>

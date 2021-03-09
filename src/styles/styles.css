@@ -10,7 +10,7 @@ body {
 
 #root, .loaded, .main-container, .navbar-container, .main-container > .col {
     height:100%;
-}  
+}
 .main-container > .col {
     padding: 0;
 }
@@ -23,7 +23,7 @@ body {
     width:100%;
     height: calc(calc(100vh - 64px)/6 - 1px);
     max-height: 134px;
-    background-color: #2b2e34; 
+    background-color: #2b2e34;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -37,7 +37,7 @@ body {
 .navbar-container > li > a.active{
     width:100%;
     height: 100%;
-    background-color: #6b1cff !important; 
+    background-color: #6b1cff !important;
     color: white !important;
     border:none;
     border-bottom: 1px solid #2b2e34 !important;
@@ -95,11 +95,11 @@ body {
 ::-webkit-scrollbar {
     width: 16px;
 }
- 
+
 ::-webkit-scrollbar-track {
     background-color: #202328;
 }
- 
+
 ::-webkit-scrollbar-thumb {
     background-color: #2b2e34;
     border-radius:5px;
@@ -310,7 +310,7 @@ img.smallLogo {
     font-weight: 500;
 }
 .hudRow .hudAuthor {
-    
+
     font-size: 12px;
     font-weight: 500;
 }
@@ -581,7 +581,7 @@ img.smallLogo {
     justify-content: center;
     flex-direction:row;
     opacity:1;
-    
+
 }
 
 .loading-screen .loading-title {
@@ -597,7 +597,7 @@ img.smallLogo {
     opacity: 0;
 }
 .loaded .loading-screen .title-container {
-    
+
     animation-name:logoFade;
     animation-duration: 4s;
     animation-fill-mode: forwards;
@@ -670,7 +670,7 @@ img.smallLogo {
     margin-bottom:10px;
 }
 .config-entry .running-game-container {
-    
+
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -804,7 +804,7 @@ input:not([type="checkbox"]), select.form-control {
 .scoreboard_container.left .scoreboard_player .name i {
     margin-left: auto;}
 .scoreboard_container.right .scoreboard_player .name i {
-    
+
     margin-right: auto;
 }
 .scoreboard_score.right {
@@ -930,9 +930,9 @@ input:not([type="checkbox"]), select.form-control {
     background: url('./slash.png') no-repeat;
     text-align: center;
     font-size: 15px;
-    height: 46px;   
+    height: 46px;
     font-weight:700;
-}   
+}
 .match_row .options {
     display: flex;
     justify-content: center;
@@ -1040,7 +1040,8 @@ form .card > .card-body > button.btn {
 }
 .dropArea.path_selector {
     height: 37px;
-    width: 200px
+    width: 200px;
+    display:inline-block;
 }
 .dropArea label {
     flex:1;
@@ -1078,7 +1079,7 @@ form .card > .card-body > button.btn {
 .nav-tabs .nav-link {
     user-select: none;
     border-radius: 0 !important;
-    
+
     flex-direction: column;
     font-size: 12px;
     font-weight: 600;
@@ -1157,7 +1158,7 @@ form .card > .card-body > button.btn {
     padding: 31px;
     max-height: 70vh;
     overflow: auto;
-
+    text-align: center;
 }
 .veto_modal .form-group {
     margin-bottom:26px;
@@ -1185,7 +1186,7 @@ form .card > .card-body > button.btn {
 }
 .veto_modal .veto_type .type.active {
     color: white;
-    
+
     border-bottom: 2px solid #7ad9f5;
 }
 .veto_modal .form-check {
@@ -1216,7 +1217,7 @@ input:checked ~ .customCheckbox {
     opacity: 0.5;
 }
 .modal-open .modal {
-    
+
     overflow-y: hidden;
 }
 
@@ -1257,7 +1258,7 @@ input:checked ~ .customCheckbox {
 }
 
 .loaded:not(.electron) .window-bar {
-    display: none;    
+    display: none;
 }
 .window-bar .app-control {
     width:64px;

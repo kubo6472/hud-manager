@@ -172,7 +172,8 @@ const HudEntry = ({ hud, isActive, toggleConfig, customFields }: IProps) => {
 							<UncontrolledCollapse toggler={`#hud_link_${hashCode(hud.dir)}`}>
 								<code
 									onClick={() => {
-										navigator.clipboard.writeText(hud.url).catch(console.error);
+										//navigator.clipboard.writeText(hud.url).catch(console.error);
+										navigator.clipboard.writeText(hud.url);
 									}}
 								>
 									{hud.url}

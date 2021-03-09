@@ -45,6 +45,7 @@ export default class DragFileInput extends React.Component<Props, State> {
 	uploadHandler = (e: any) => {
 		if (e.target.files) {
 			this.props.onChange(e.target.files);
+			e.target.value = '';
 		}
 	};
 
